@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Android TV エミュレータ起動スクリプト
 .DESCRIPTION
@@ -32,7 +32,7 @@ if (-not (Test-Path $adbExe)) {
 }
 
 # 起動中チェック
-$existing = & $adbExe devices | Select-String -Pattern "emulator-\d+\s+device"
+$existing = & $adbExe devices | Select-String -Pattern "(emulator-\d+|127\.0\.0\.1:555\d)\s+device"
 if ($existing) {
     Write-Warning "すでに実行中のエミュレータが存在します: $($existing[0].Line.Trim())"
     exit 0
@@ -92,14 +92,20 @@ try {
 
         # adb wait-for-device 状態確認
         $devs = & $adbExe devices 2>$null
-        $targetDev = ($devs | Select-String -Pattern "emulator-\d+\s+device")
+        $targetDev = ($devs | Select-String -Pattern "(emulator-\d+|127\.0\.0\.1:555\d)\s+device")
+        if (-not $targetDev) {
+            & $adbExe connect 127.0.0.1:5555 | Out-Null
+            $devs = & $adbExe devices 2>$null
+            $targetDev = ($devs | Select-String -Pattern "(emulator-\d+|127\.0\.0\.1:555\d)\s+device")
+        }
         
         if ($targetDev) {
             $devName = ($targetDev[0].Line -split '\s+')[0]
             $bootProp = (& $adbExe -s $devName shell getprop sys.boot_completed 2>$null).Trim()
             $animProp = (& $adbExe -s $devName shell getprop init.svc.bootanim 2>$null).Trim()
 
-            if ($bootProp -eq "1" -and $animProp -eq "stopped") {
+            # sys.boot_completed が 1、かつ bootanim が停止または未実行（スナップショット復帰時）
+            if ($bootProp -eq "1" -and ($animProp -eq "stopped" -or [string]::IsNullOrWhiteSpace($animProp))) {
                 $bootCompleted = $true
                 break
             }

@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Android TV エミュレータ停止スクリプト
 .DESCRIPTION
@@ -24,7 +24,13 @@ Write-Host "=== Android TV Emulator 停止処理 ===" -ForegroundColor Cyan
 
 # 稼働中のデバイス検出
 $devicesOutput = & $adbExe devices
-$emuDevices = $devicesOutput | Select-String -Pattern "emulator-\d+\s+device"
+$emuDevices = $devicesOutput | Select-String -Pattern "(emulator-\d+|127\.0\.0\.1:555\d)\s+device"
+
+if (-not $emuDevices) {
+    & $adbExe connect 127.0.0.1:5555 | Out-Null
+    $devicesOutput = & $adbExe devices
+    $emuDevices = $devicesOutput | Select-String -Pattern "(emulator-\d+|127\.0\.0\.1:555\d)\s+device"
+}
 
 if (-not $emuDevices) {
     Write-Warning "実行中のエミュレータは見つかりませんでした。"

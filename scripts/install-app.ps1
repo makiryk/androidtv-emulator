@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Android TV アプリ (APK) インストールスクリプト
 .DESCRIPTION
@@ -31,7 +31,13 @@ if (-not (Test-Path $adbExe)) {
 
 # 稼働中のデバイス確認
 $devicesOutput = & $adbExe devices
-$emuDevices = $devicesOutput | Select-String -Pattern "emulator-\d+\s+device"
+$emuDevices = $devicesOutput | Select-String -Pattern "(emulator-\d+|127\.0\.0\.1:555\d)\s+device"
+
+if (-not $emuDevices) {
+    & $adbExe connect 127.0.0.1:5555 | Out-Null
+    $devicesOutput = & $adbExe devices
+    $emuDevices = $devicesOutput | Select-String -Pattern "(emulator-\d+|127\.0\.0\.1:555\d)\s+device"
+}
 
 if (-not $emuDevices) {
     Write-Error "接続中の Android エミュレータが見つかりません。先に start-tv.ps1 で起動してください。"

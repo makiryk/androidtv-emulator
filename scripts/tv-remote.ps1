@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Android TV リモコン操作スクリプト
 .DESCRIPTION
@@ -23,7 +23,14 @@ if (-not (Test-Path $adbExe)) {
 
 # 稼働中のデバイス確認
 $devicesOutput = & $adbExe devices
-$emuDevices = $devicesOutput | Select-String -Pattern "emulator-\d+\s+device"
+$emuDevices = $devicesOutput | Select-String -Pattern "(emulator-\d+|127\.0\.0\.1:555\d)\s+device"
+
+if (-not $emuDevices) {
+    # 接続試行
+    & $adbExe connect 127.0.0.1:5555 | Out-Null
+    $devicesOutput = & $adbExe devices
+    $emuDevices = $devicesOutput | Select-String -Pattern "(emulator-\d+|127\.0\.0\.1:555\d)\s+device"
+}
 
 if (-not $emuDevices) {
     Write-Error "接続中の Android エミュレータが見つかりません。先に start-tv.ps1 で起動してください。"
@@ -42,6 +49,8 @@ $keyMap = @{
     "Back"        = 4   # KEYCODE_BACK
     "Home"        = 3   # KEYCODE_HOME
     "Menu"        = 82  # KEYCODE_MENU
+    "VoiceAssist" = 231 # KEYCODE_VOICE_ASSIST (リモコンのマイクボタン)
+    "Search"      = 84  # KEYCODE_SEARCH (音声検索)
     "PlayPause"   = 85  # KEYCODE_MEDIA_PLAY_PAUSE
     "FastForward" = 90  # KEYCODE_MEDIA_FAST_FORWARD
     "Rewind"      = 89  # KEYCODE_MEDIA_REWIND
@@ -82,6 +91,7 @@ Write-Host "  [↑][↓][←][→] : 十字キー移動"
 Write-Host "  [Enter / Space]: 決定 (Select / OK)"
 Write-Host "  [Backspace / ESC]: 戻る (Back)"
 Write-Host "  [H]           : ホーム (Home)"
+Write-Host "  [V]           : 音声アシスタント / マイク (Voice)"
 Write-Host "  [P]           : 再生 / 一時停止"
 Write-Host "  [+] / [-]     : 音量 Up / Down"
 Write-Host "  [Q]           : 終了"
@@ -99,6 +109,7 @@ while ($true) {
         "Backspace"  { Send-KeyEvent "Back"; Write-Host " [Back] " -NoNewline }
         "Escape"     { Send-KeyEvent "Back"; Write-Host " [Back] " -NoNewline }
         "H"          { Send-KeyEvent "Home"; Write-Host " [Home] " -NoNewline }
+        "V"          { Send-KeyEvent "VoiceAssist"; Write-Host " [VoiceAssist/Mic] " -NoNewline }
         "P"          { Send-KeyEvent "PlayPause"; Write-Host " [Play/Pause] " -NoNewline }
         "Add"        { Send-KeyEvent "VolumeUp"; Write-Host " [Vol+] " -NoNewline }
         "Subtract"   { Send-KeyEvent "VolumeDown"; Write-Host " [Vol-] " -NoNewline }

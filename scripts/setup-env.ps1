@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Android TV エミュレータ環境のセットアップと AVD 作成スクリプト
 .DESCRIPTION
@@ -68,6 +68,7 @@ try {
 
     if (Test-Path $configFile) {
         $content = Get-Content $configFile -Encoding utf8
+        $lines = @()
         $settings = @{
             "hw.ramSize" = "2048"
             "vm.heapSize" = "512"
@@ -77,15 +78,25 @@ try {
             "disk.dataPartition.size" = "4096M"
         }
 
-        foreach ($key in $settings.Keys) {
-            $val = $settings[$key]
-            if ($content -match "^$key\s*=") {
-                $content = $content -replace "^$key\s*=.*", "$key = $val"
-            } else {
-                $content += "$key = $val"
+        foreach ($line in $content) {
+            if ($line -match '^\s*([^=\s]+)\s*=\s*(.*)$') {
+                $k = $matches[1].Trim()
+                $v = $matches[2].Trim()
+                if ($settings.ContainsKey($k)) {
+                    $v = $settings[$k]
+                    $settings.Remove($k)
+                }
+                $lines += "$k=$v"
             }
         }
-        Set-Content -Path $configFile -Value $content -Encoding utf8
+        foreach ($k in $settings.Keys) {
+            $v = $settings[$k]
+            $lines += "$k=$v"
+        }
+
+        # Java Properties は BOM 付き UTF-8 だとパースエラーになるため BOM なし UTF-8 で保存
+        $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+        [System.IO.File]::WriteAllLines($configFile, $lines, $utf8NoBom)
         Write-Host "config.ini を最適化しました: $configFile" -ForegroundColor Green
     } else {
         Write-Warning "config.ini が見つかりませんでした: $configFile"
