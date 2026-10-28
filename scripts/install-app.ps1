@@ -14,7 +14,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-$sdk = "C:\Users\mira\AppData\Local\Android\Sdk"
+$sdk = if ($env:ANDROID_HOME) { $env:ANDROID_HOME } elseif ($env:ANDROID_SDK_ROOT) { $env:ANDROID_SDK_ROOT } else { Join-Path $env:LOCALAPPDATA "Android\Sdk" }
 $adbExe = Join-Path $sdk "platform-tools\adb.exe"
 $aapt2Exe = Join-Path $sdk "build-tools\34.0.0\aapt2.exe"
 

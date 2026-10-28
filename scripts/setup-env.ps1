@@ -12,7 +12,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-$sdk = "C:\Users\mira\AppData\Local\Android\Sdk"
+$sdk = if ($env:ANDROID_HOME) { $env:ANDROID_HOME } elseif ($env:ANDROID_SDK_ROOT) { $env:ANDROID_SDK_ROOT } else { Join-Path $env:LOCALAPPDATA "Android\Sdk" }
 $jdk = "C:\Program Files\Microsoft\jdk-17.0.21.21-hotspot"
 $avdName = "AndroidTV_1080p"
 $targetSystemImage = "system-images;android-34;android-tv;x86"

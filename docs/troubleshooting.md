@@ -12,7 +12,7 @@
    - **「Windows ハイパーバイザー プラットフォーム」** (Windows Hypervisor Platform) にチェックを入れて再起動。
 2. **コマンドでの確認**:
    ```powershell
-   & "C:\Users\mira\AppData\Local\Android\Sdk\emulator\emulator.exe" -accel-check
+   & "$env:LOCALAPPDATA\Android\Sdk\emulator\emulator.exe" -accel-check
    ```
    出力に `WHPX is installed and usable.` と出れば正常です。
 

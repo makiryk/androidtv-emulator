@@ -17,7 +17,7 @@
 ## 1. システム構成・環境仕様
 
 ### 1.1 パスおよび依存環境
-- **Android SDK ルート**: `C:\Users\mira\AppData\Local\Android\Sdk`
+- **Android SDK ルート**: `%LOCALAPPDATA%\Android\Sdk` (または `$ANDROID_HOME`)
 - **JDK 17 ルート**: `C:\Program Files\Microsoft\jdk-17.0.21.21-hotspot`
 - **Android Platform-Tools (adb)**: `$SDK\platform-tools\adb.exe`
 - **Cmdline-tools (sdkmanager / avdmanager)**: `$SDK\cmdline-tools\latest\bin\`
